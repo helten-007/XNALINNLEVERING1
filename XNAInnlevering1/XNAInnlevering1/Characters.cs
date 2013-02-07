@@ -13,7 +13,7 @@ namespace XNAInnlevering1
     class Character : GameObject
     {
         private Texture2D _charBoy, _charCatGirl, _charHornGirl,
-            _charPinkgirl, _charPrincessGirl;
+            _charPinkgirl, _charPrincessGirl, _heart;
 
         private MouseState _previousMouseState, _currentMouseState;
 
@@ -26,8 +26,11 @@ namespace XNAInnlevering1
 
         private Stopwatch _gameTime;
 
+        private int _lives = 5;
+
         private int _charStartPositionX, _charStartPositionY, _windowWidth,levelSpeed, 
             _randomCharacter, _timeSinceLastCharacter, _timeBetweenCharacters;
+
 
         public Character(SpriteBatch spriteBatch, ContentManager contentMananger)
             : base(spriteBatch, contentMananger)
@@ -37,6 +40,7 @@ namespace XNAInnlevering1
             _charHornGirl = content.Load<Texture2D>("Character Horn girl");
             _charPinkgirl = content.Load<Texture2D>("Character Pink Girl");
             _charPrincessGirl = content.Load<Texture2D>("Character Princess Girl");
+            _heart = content.Load<Texture2D>("Heart");
 
             _charStartPositionX = -1000;
             _charStartPositionY = 480 - _charBoy.Height;
@@ -50,6 +54,7 @@ namespace XNAInnlevering1
             _gameTime.Start();
             rand = new Random();
             _charPosition = new Vector2(_charStartPositionX, _charStartPositionY);
+
         }
 
         internal override void Update()
@@ -69,7 +74,7 @@ namespace XNAInnlevering1
             if (_charPosition.X > _windowWidth)
             {
                 _charPosition.X = _charStartPositionX;
-                loseLife();
+                loseLives();
             }
 
             _timeSinceLastCharacter += (int)_gameTime.ElapsedMilliseconds;
@@ -80,7 +85,12 @@ namespace XNAInnlevering1
                 _randomCharacter = rand.Next(0, 5);
                 _timeSinceLastCharacter = 0;
             }
+
+            Console.WriteLine(_lives);
+            Console.WriteLine(isGameLost());
+            
         }
+
 
         internal void DrawCharacters (int random)
         {
@@ -107,17 +117,36 @@ namespace XNAInnlevering1
             }
         }
 
+        public void DrawHearts(int lives)
+        {
+            spriteBatch.Draw(_heart, new Rectangle(_heart.Width * lives, 0, 60, 60), Color.White);
+        }
+
         internal override void Draw()
         {
             DrawCharacters(_randomCharacter);
+            for (int i = 0; i < _lives; i++)
+            {
+                DrawHearts(i);
+            }
         }
 
         internal bool IsMousePressed()
         {
             if (_currentMouseState.LeftButton == ButtonState.Released && _previousMouseState.LeftButton == ButtonState.Pressed)
                 return true;
-
             return false;
+        }
+
+        public int loseLives()
+        {
+            _lives -= 1;
+            return _lives;
+        }
+
+        public bool isGameLost()
+        {
+            return (_lives == 0);
         }
     }
 }

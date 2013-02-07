@@ -166,5 +166,7 @@ namespace XNAInnlevering1
         {
             return (_numberOfGems == 3);
         }
+
+        
     }
 }

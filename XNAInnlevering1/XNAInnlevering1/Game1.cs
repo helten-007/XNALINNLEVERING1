@@ -23,6 +23,7 @@ namespace XNAInnlevering1
         private Background drawBackground;
         private EnemyBugs enemyBug;
         private Random rand = new Random();
+        private Character character;
 
         public Game1()
         {
@@ -55,6 +56,8 @@ namespace XNAInnlevering1
             drawBackground = new Background(spriteBatch, Content, Window.ClientBounds.Height);
 
             enemyBug = new EnemyBugs(spriteBatch, Content, Window.ClientBounds.Width);
+
+            character = new Character(spriteBatch, Content);
         }
 
 
@@ -81,7 +84,7 @@ namespace XNAInnlevering1
 
             characterHandler.Update();
 
-            if (enemyBug.isGameWon())
+            if (enemyBug.isGameWon() || character.isGameLost())
                 Exit();
 
             base.Update(gameTime);
