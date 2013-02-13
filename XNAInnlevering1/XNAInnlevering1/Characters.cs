@@ -1,23 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
+using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.GamerServices;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Media;
 using System.Diagnostics;
 
 namespace XNAInnlevering1
 {
-    class Character : GameObject
+    class Characters : GameObject
     {
         private Texture2D _charBoy, _charCatGirl, _charHornGirl,
-            _charPinkgirl, _charPrincessGirl, _heart;
+            _charPinkgirl, _charPrincessGirl;
 
         private MouseState _previousMouseState, _currentMouseState;
 
         private Vector2 _charPosition;
+
+        internal bool collision { get; set; }
 
         private Rectangle _mouseRect;
         private Rectangle _characterHitBox;
@@ -26,13 +30,12 @@ namespace XNAInnlevering1
 
         private Stopwatch _gameTime;
 
-        private int _lives = 5;
+        private int _charStartPositionX, _charStartPositionY, _windowWidth,_movementSpeed, 
+            _randomCharacter, _timeSinceLastCharacter, _timeBetweenCharacters, _timeToIncreaseSpeed, 
+            _timeBetweenSpeedIncrease;
 
-        private int _charStartPositionX, _charStartPositionY, _windowWidth,levelSpeed, 
-            _randomCharacter, _timeSinceLastCharacter, _timeBetweenCharacters;
 
-
-        public Character(SpriteBatch spriteBatch, ContentManager contentMananger)
+        public Characters(SpriteBatch spriteBatch, ContentManager contentMananger)
             : base(spriteBatch, contentMananger)
         {
             _charBoy = content.Load<Texture2D>("Character Boy");
@@ -40,25 +43,25 @@ namespace XNAInnlevering1
             _charHornGirl = content.Load<Texture2D>("Character Horn girl");
             _charPinkgirl = content.Load<Texture2D>("Character Pink Girl");
             _charPrincessGirl = content.Load<Texture2D>("Character Princess Girl");
-            _heart = content.Load<Texture2D>("Heart");
-
+            
             _charStartPositionX = -1000;
             _charStartPositionY = 480 - _charBoy.Height;
             _windowWidth = 800 - _charBoy.Width;
-            levelSpeed = 5;
+            _movementSpeed = 3;
             _randomCharacter = 0;
             _timeSinceLastCharacter = 0;
             _timeBetweenCharacters = 2000;
+            _timeBetweenSpeedIncrease = 10000;
 
             _gameTime = new Stopwatch();
             _gameTime.Start();
             rand = new Random();
             _charPosition = new Vector2(_charStartPositionX, _charStartPositionY);
-
         }
 
         internal override void Update()
         {
+            collision = false;
             _previousMouseState = _currentMouseState;
             _currentMouseState = Mouse.GetState();
 
@@ -66,7 +69,7 @@ namespace XNAInnlevering1
 
             _characterHitBox = new Rectangle((int)_charPosition.X + 17, (int)_charPosition.Y + 61, 67, 78);
 
-            _charPosition.X += levelSpeed;
+            _charPosition.X += _movementSpeed;
 
             if (_mouseRect.Intersects(_characterHitBox) && IsMousePressed())
                 _charPosition.X = _charStartPositionX;
@@ -74,9 +77,21 @@ namespace XNAInnlevering1
             if (_charPosition.X > _windowWidth)
             {
                 _charPosition.X = _charStartPositionX;
-                loseLives();
+                collision = true;
             }
 
+            /* 
+             * Øker farten hvis karakteren er utenfor skjermen. Tiden er 
+             * lagt til for at karakteren ikke skal bytte utseende for 
+             * hver frame den er utenfor skjermen. 
+             */ 
+            if (_timeToIncreaseSpeed > _timeBetweenSpeedIncrease && 
+                _charPosition.X < -101) 
+            {
+                _timeToIncreaseSpeed = 0;
+                _movementSpeed += rand.Next(1, 3);
+            }
+            _timeToIncreaseSpeed += (int)_gameTime.ElapsedMilliseconds;
             _timeSinceLastCharacter += (int)_gameTime.ElapsedMilliseconds;
             _gameTime.Restart();
             if (_timeSinceLastCharacter > _timeBetweenCharacters &&
@@ -85,12 +100,7 @@ namespace XNAInnlevering1
                 _randomCharacter = rand.Next(0, 5);
                 _timeSinceLastCharacter = 0;
             }
-
-            Console.WriteLine(_lives);
-            Console.WriteLine(isGameLost());
-            
         }
-
 
         internal void DrawCharacters (int random)
         {
@@ -117,18 +127,9 @@ namespace XNAInnlevering1
             }
         }
 
-        public void DrawHearts(int lives)
-        {
-            spriteBatch.Draw(_heart, new Rectangle(_heart.Width * lives, 0, 60, 60), Color.White);
-        }
-
         internal override void Draw()
         {
             DrawCharacters(_randomCharacter);
-            for (int i = 0; i < _lives; i++)
-            {
-                DrawHearts(i);
-            }
         }
 
         internal bool IsMousePressed()
@@ -136,17 +137,6 @@ namespace XNAInnlevering1
             if (_currentMouseState.LeftButton == ButtonState.Released && _previousMouseState.LeftButton == ButtonState.Pressed)
                 return true;
             return false;
-        }
-
-        public int loseLives()
-        {
-            _lives -= 1;
-            return _lives;
-        }
-
-        public bool isGameLost()
-        {
-            return (_lives == 0);
-        }
+        }  
     }
 }

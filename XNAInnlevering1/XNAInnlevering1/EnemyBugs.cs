@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
@@ -17,7 +16,9 @@ namespace XNAInnlevering1
     {
         private Texture2D _enemyBug, _gemBlue, _gemOrange, _gemGreen;
         private Rectangle _rectGemBlue, _rectGemOrange, _rectGemGreen,
-            _mouseRectangle, _normalBugRect, _lowerBugRect, _bugHitBox;
+            _mouseHitBox, _normalBugRect, _lowerBugRect,
+            _bugHitBox, _lowerBugHitBox;
+
         private int _posX, _posY, _numberOfGems, _timeBetweenRandoms,
             _position, _timeWithRandoms, _mouseCounter, _timeWithoutRandoms,
             _timeSinceLastRandom;
@@ -54,22 +55,20 @@ namespace XNAInnlevering1
         internal override void Update()
         {
 
-            _bugHitBox = new Rectangle();
+            _bugHitBox = new Rectangle(_normalBugRect.X, _normalBugRect.Y + 25, 50, 60);
+            _lowerBugHitBox = new Rectangle(_lowerBugRect.X, _lowerBugRect.Y + 25, 50, 60);
             _previousMouseState = _currentMouseState;
             _currentMouseState = Mouse.GetState();
-            _mouseRectangle = new Rectangle(_currentMouseState.X, _currentMouseState.Y, 10, 10);
+            _mouseHitBox = new Rectangle(_currentMouseState.X, _currentMouseState.Y, 5, 5);
             _timeWithoutRandoms += (int)_gameTime.ElapsedMilliseconds;
             _timeSinceLastRandom += (int)_gameTime.ElapsedMilliseconds;
             _gameTime.Restart();
 
             if (_timeSinceLastRandom > _timeBetweenRandoms)
             {
-                
-                Console.WriteLine(_timeSinceLastRandom - _timeWithoutRandoms);
                 _timeSinceLastRandom = 0;
                 _position = rand.Next(1, 6);
                 _enemyBug = content.Load<Texture2D>("Enemy Bug");
-                Console.WriteLine(_position);
             }
             if (_timeWithoutRandoms > _timeWithRandoms || _mouseCounter >= 21)
             {
@@ -77,17 +76,15 @@ namespace XNAInnlevering1
                 {
                     _timeSinceLastRandom = _timeWithRandoms;
                     _timeWithoutRandoms = 0;
-                    Console.WriteLine("Timers reset");
                 }
 
-                Console.WriteLine("ballle");
                 _mouseCounter = 0;
                 _timeWithoutRandoms = (_timeWithRandoms - _timeBetweenRandoms);
                 _position = 0;
                 
             }
-            if (IsMousePressed() && (_mouseRectangle.Intersects(_normalBugRect) ||
-                _mouseRectangle.Intersects(_lowerBugRect)))
+            if (IsMousePressed() && (_mouseHitBox.Intersects(_bugHitBox) ||
+                _mouseHitBox.Intersects(_lowerBugHitBox)))
             {
                 _mouseCounter++;
                 Console.WriteLine(_mouseCounter);
@@ -102,34 +99,39 @@ namespace XNAInnlevering1
                     _numberOfGems++;
                 }
             }
-
         }
 
         internal override void Draw()
         {
-            drawGem(_numberOfGems);
-            _normalBugRect = new Rectangle((_posX * _position) + 25, _posY + 100, 50, 100);
-            _lowerBugRect = new Rectangle((_posX * _position) + 25, _posY + 140, 50, 100);
+            
+            DrawGem(_numberOfGems);
+            _normalBugRect = new Rectangle(-200,0,0,0);
+            _lowerBugRect = new Rectangle(-200,0,0,0);
 
             switch (_position)
             {
                 case 1:
+                    _normalBugRect = new Rectangle((_posX * _position) + 25, _posY + 100, 50, 100);
                     spriteBatch.Draw(_enemyBug, _normalBugRect, Color.White);
                     break;
 
                 case 2:
+                    _normalBugRect = new Rectangle((_posX * _position) + 25, _posY + 100, 50, 100);
                     spriteBatch.Draw(_enemyBug, _normalBugRect, Color.White);
                     break;
 
                 case 3:
+                    _normalBugRect = new Rectangle((_posX * _position) + 25, _posY + 100, 50, 100);
                     spriteBatch.Draw(_enemyBug, _normalBugRect, Color.White);
                     break;
 
                 case 4:
+                    _normalBugRect = new Rectangle((_posX * _position) + 25, _posY + 100, 50, 100);
                     spriteBatch.Draw(_enemyBug, _normalBugRect, Color.White);
                     break;
 
                 case 5:
+                    _lowerBugRect = new Rectangle((_posX * _position) + 25, _posY + 140, 50, 100);
                     spriteBatch.Draw(_enemyBug, _lowerBugRect, Color.White);
                     break;
 
@@ -138,7 +140,7 @@ namespace XNAInnlevering1
             }
         }
 
-        internal void drawGem(int numberOfGems)
+        internal void DrawGem(int numberOfGems)
         {
             if (numberOfGems >= 1)
             {
@@ -162,11 +164,9 @@ namespace XNAInnlevering1
             return false;
         }
 
-        public bool isGameWon()
+        public bool IsGameWon()
         {
             return (_numberOfGems == 3);
         }
-
-        
     }
 }

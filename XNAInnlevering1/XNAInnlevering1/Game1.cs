@@ -22,8 +22,9 @@ namespace XNAInnlevering1
         private CharacterHandler characterHandler;
         private Background drawBackground;
         private EnemyBugs enemyBug;
-        private Random rand = new Random();
-        private Character character;
+        private Characters characters;
+        private Texture2D _soMuchWin;
+        private int _timeSinceFirstWinScreen, _timeWithWinScreens;
 
         public Game1()
         {
@@ -49,6 +50,8 @@ namespace XNAInnlevering1
         /// </summary>
         protected override void LoadContent()
         {
+            _soMuchWin = Content.Load<Texture2D>("WinScreen");
+
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             characterHandler = new CharacterHandler(spriteBatch, Content);
@@ -57,7 +60,9 @@ namespace XNAInnlevering1
 
             enemyBug = new EnemyBugs(spriteBatch, Content, Window.ClientBounds.Width);
 
-            character = new Character(spriteBatch, Content);
+            characters = new Characters(spriteBatch, Content);
+
+            _timeWithWinScreens = 3000;
         }
 
 
@@ -80,12 +85,21 @@ namespace XNAInnlevering1
         {
             Window.Title = "Capture the Cutes";
 
-            enemyBug.Update();
+            if (!enemyBug.IsGameWon())
+            {
+                enemyBug.Update();
 
-            characterHandler.Update();
+                characterHandler.Update();
+                if (characterHandler.IsGameLost())
+                    Exit();
+            }
 
-            if (enemyBug.isGameWon() || character.isGameLost())
-                Exit();
+            if (enemyBug.IsGameWon()) 
+            {
+                _timeSinceFirstWinScreen += gameTime.ElapsedGameTime.Milliseconds;
+                if (_timeSinceFirstWinScreen > _timeWithWinScreens)
+                    Exit();
+            }
 
             base.Update(gameTime);
         }
@@ -106,6 +120,11 @@ namespace XNAInnlevering1
             enemyBug.Draw();
 
             characterHandler.Draw();
+
+            characters.Draw();
+
+            if (enemyBug.IsGameWon())
+                spriteBatch.Draw(_soMuchWin, new Rectangle(0, 0, Window.ClientBounds.Width, Window.ClientBounds.Height), Color.White);
 
             spriteBatch.End();
 

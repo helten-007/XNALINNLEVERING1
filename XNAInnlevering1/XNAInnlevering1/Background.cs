@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
@@ -49,12 +48,12 @@ namespace XNAInnlevering1
 
         internal override void Draw()
         {
-            drawStreet();
-            drawWall();
-            drawRoof();
+            DrawStreet();
+            DrawWall();
+            DrawRoof();
         }
 
-        public void drawRoof()
+        public void DrawRoof()
         {
             // Loop that draws the top row of the roof
             for (int i = 0; i < _backgroundWidth; i++)
@@ -94,7 +93,7 @@ namespace XNAInnlevering1
             }
         }
 
-        public void drawWall()
+        public void DrawWall()
         {
             for (int i = 0; i < _backgroundWidth; i++)
             {
@@ -105,7 +104,7 @@ namespace XNAInnlevering1
             }
         }
 
-        public void drawStreet()
+        public void DrawStreet()
         {
             for (int i = 0; i < _backgroundWidth; i++)
             {
